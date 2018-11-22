@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block main %}
+    <form action="/register" method="post">
+        <div class="form-group">
+            <input name="username" autocomplete="off" autofocus class="form-control" placeholder="Username" id="username" type="text">
+        </div>
+        <div class="form-group">
+            <input class="form-control" name="password" placeholder="Password" type="password">
+        </div>
+        <div class="form-group">
+            <input class="form-control" name="confirmation" placeholder="Confirm Password" type="password">
+        </div>
+        <button class="btn btn-primary" type="submit" id="submit">Register</button>
+    </form>
+    <script>
+
+        $("#submit").click(function() {
+            event.preventDefault();
+            $.get("/check?username=" + $("#username").val(), function(data) {
+                if(data) {
+                    $("form").submit();
+                } else {
+                    alert("Username already exists");
+                }
+            });
+        });
+    
+    </script>
+{% endblock %}
