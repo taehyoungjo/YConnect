@@ -41,7 +41,8 @@ db = SQL("sqlite:///yconnect.db")
 def index():
     """"""
     if request.method == "GET":
-        return render_template("index.html")
+        majors = db.execute("SELECT id FROM majors")
+        return render_template("index.html", majors=majors)
 
 
 @app.route("/check", methods=["GET"])
@@ -126,22 +127,41 @@ def register():
         if not result:
             return apology("Username already exists", 400)
         session["user_id"] = result
-        return redirect("/")
+        return redirect("/updateprofile")
 
-@app.route("/search", methods=["GET", "POST"])
-@login_required
+@app.route("/search")
 def search():
     """"""
-    if request.method == "GET":
-        majors = db.execute("SELECT id FROM majors")
-        return render_template("search.html", majors=majors)
+    name = request.args.get("name")
+    name_edit = name + '%'
+    major = request.args.get("major")
+    profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major", name=name_edit, major=major)
+    return jsonify(profiles)
 
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
     """"""
     if request.method == "GET":
-        return render_template("profile.html")
+        profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+        return render_template("profile.html", profile=profile)
+
+@app.route("/updateprofile", methods=["GET", "POST"])
+@login_required
+def updateprofile():
+    """"""
+    if request.method == "GET":
+        majors = db.execute("SELECT id FROM majors")
+        return render_template("updateprofile.html", majors=majors) 
+    elif request.method == "POST":
+        exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+        if exist:
+            result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year WHERE id=:id", id=session["user_id"],
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"))
+        else:
+            result = db.execute("INSERT INTO profile (id, name, major, year) VALUES(:id, :name, :major, :year)", id=session["user_id"], 
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"))
+        return redirect("/profile")
 
 def errorhandler(e):
     """Handle error"""

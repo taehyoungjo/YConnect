@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-<form action="/index" method="get">
+<form action="/updateprofile" method="post">
     <div class="form-group">
         <input autocomplete="off" autofocus class="form-control" name="name" placeholder="Name" type="text">
     </div>
@@ -16,27 +16,17 @@
           <option value="{{id["id"]}}">{{ id["id"] }}</option>
           {% endfor %}
         </select>
-      </div>
+    </div>
+    <div class="form-group">
+        <select autocomplete="off" autofocus class="form-control" name="year" placeholder="Year">
+            <option value="" selected disabled>Class</option>
+            <option value="2019">2019</option>
+            <option value="2020">2020</option>
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+        </select>
+    </div>
+    <button class="btn btn-primary" type="submit" id="submit">Update</button>
 </form>
 
-<ul></ul>
-
-<script>
-
-    let name = document.querySelector('input');
-    name.onkeyup = function() {
-        alert("test");
-        document.querySelector('ul').innerHTML = '<li>Test</li>';
-/*        
-        $.get('/search?name=' + name.value, function(data) {
-            let html = '';
-            for (profile of data) {
-                html += '<li>' + profile + "</li>";
-            }
-            document.querySelector('ul').innerHTML = html;
-        });
-*/
-    };
-
-</script>
 {% endblock %}
