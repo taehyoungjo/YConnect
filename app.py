@@ -141,12 +141,16 @@ def search():
         profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major AND year = :year", name=name_edit, major=major, year=year)
     return jsonify(profiles)
 
-@app.route("/myprofile", methods=["GET", "POST"])
+@app.route("/profile", methods=["GET", "POST"])
 @login_required
-def myprofile():
+def profile():
     """"""
     if request.method == "GET":
-        profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+        id = request.args.get("id")
+        if id == "self":
+            profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+        else:    
+            profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
         return render_template("profile.html", profile=profile)
 
 @app.route("/updateprofile", methods=["GET", "POST"])

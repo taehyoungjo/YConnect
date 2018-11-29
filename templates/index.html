@@ -50,7 +50,9 @@
                         + profile["major"] 
                         + ', ' 
                         + profile["year"] 
-                        + '</p><a href="#" class="btn btn-primary">Profile</a></div></div></div>'
+                        + '</p><a href="/profile?id='
+                        + profile["id"]
+                        + '" class="btn btn-primary">Profile</a></div></div></div>'
             }
             document.getElementById("results").innerHTML = html;
         });lineslines
