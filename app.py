@@ -16,15 +16,12 @@ app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # Ensure responses aren't cached
-
-
 @app.after_request
 def after_request(response):
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
-
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
@@ -66,7 +63,6 @@ def login():
 
     # Forget any user_id
     session.clear()
-
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
@@ -110,7 +106,6 @@ def logout():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    """Register user"""
     if request.method == "GET":
         return render_template("register.html")
     elif request.method == "POST":
@@ -133,14 +128,22 @@ def register():
 def search():
     """"""
     name = request.args.get("name")
-    name_edit = name + '%'
+    name_edit = '%' + name + '%'
     major = request.args.get("major")
-    profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major", name=name_edit, major=major)
+    year = request.args.get("year")
+    if major == "NULL" and year == "NULL":
+        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name", name=name_edit)
+    elif major == "NULL":
+        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND year = :year", name=name_edit, year=year)
+    elif year == "NULL":
+        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major", name=name_edit, major=major)
+    elif major and year:
+        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major AND year = :year", name=name_edit, major=major, year=year)
     return jsonify(profiles)
 
-@app.route("/profile", methods=["GET", "POST"])
+@app.route("/myprofile", methods=["GET", "POST"])
 @login_required
-def profile():
+def myprofile():
     """"""
     if request.method == "GET":
         profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
@@ -162,6 +165,13 @@ def updateprofile():
             result = db.execute("INSERT INTO profile (id, name, major, year) VALUES(:id, :name, :major, :year)", id=session["user_id"], 
                 name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"))
         return redirect("/profile")
+
+@app.route("/connections", methods=["GET", "POST"])
+@login_required
+def connections():
+    """"""
+    if request.method == "GET":
+        return render_template("connections.html")
 
 def errorhandler(e):
     """Handle error"""
