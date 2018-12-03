@@ -170,11 +170,11 @@ def updateprofile():
     elif request.method == "POST":
         exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
         if exist:
-            result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college = :residential_college WHERE id=:id", id=session["user_id"],
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"))
+            result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio WHERE id=:id", id=session["user_id"],
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"))
         else:
-            result = db.execute("INSERT INTO profile (id, name, major, year, residential_college) VALUES(:id, :name, :major, :year, :residential_college)", id=session["user_id"],
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"))
+            result = db.execute("INSERT INTO profile (id, name, major, year, residential_college, bio) VALUES(:id, :name, :major, :year, :residential_college, :bio)", id=session["user_id"],
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"))
         return redirect("/profile")
 
 @app.route("/connections", methods=["GET", "POST"])
