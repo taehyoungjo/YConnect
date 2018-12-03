@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-<form action="/updateprofile" method="post">
+<form action="/updateprofile" method="get">
     <div class="form-group">
         <input autocomplete="off" autofocus class="form-control" name="name" placeholder="Name" type="text">
     </div>
@@ -26,7 +26,61 @@
             <option value="2022">2022</option>
         </select>
     </div>
-    <button class="btn btn-primary" type="submit" id="submit">Update</button>
+
+    <div class="form-group col-sm-6">
+        <input autocomplete="off" autofocus class="form-control" name="class_id" placeholder="Class ID" onkeyup="search();" type="text">
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Class ID</th>
+                <th scope="col">Class Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <div class="row" id="results"></div>
+            </tr>
+
+            <!--<tr>-->
+            <!--    <td>-->
+            <!--        <div class="form-check">-->
+            <!--            <input class="form-check-input" type="checkbox" value="CLASSID" id="test">-->
+            <!--            <label class="form-check-label" for="defaultCheck1">classinfo["class_id"}</label>-->
+            <!--        </div>-->
+            <!--    </td>-->
+            <!--    <td>-->
+            <!--        classinfo["class_name"]-->
+            <!--    </td>-->
+            <!--</tr>-->
+        </tbody>
+
+    </table>
+    <div>
+        <button class="btn btn-primary" type="submit" id="submit">Update</button>
+    </div>
 </form>
+
+<script>
+
+    let class_id = document.getElementById('class_id');
+
+    function search() {
+        $.get('/class_search?name=' + class_id.value, function(data) {
+            let html = '';
+            for (class_info of data) {
+                html += '<td><div class="form-check"><input class="form-check-input" type="checkbox" value="'
+                        + classinfo["class_id"]
+                        + '"> <label class="form-check-label" for="defaultCheck1">'
+                        + classinfo["class_id"]
+                        + '</label></div></td><td>'
+                        + classinfo["class_name"]
+                        + '</td>'
+
+            }
+            document.getElementById("results").innerHTML = html;
+        });
+    };
+</script>
 
 {% endblock %}
