@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Search
+    Update Profile
 {% endblock %}
 
 {% block main %}
@@ -36,7 +36,7 @@
             <option value="Davenport">Davenport</option>
             <option value="Ezra Stiles">Ezra Stiles</option>
             <option value="Grace Hopper">Grace Hopper</option>
-            <option value="Jonathan Edwards">College</option>
+            <option value="Jonathan Edwards">Jonathan Edwards</option>
             <option value="Morse">Morse</option>
             <option value="Pauli Murray">Pauli Murray</option>
             <option value="Pierson">Pierson</option>
@@ -48,8 +48,9 @@
     </div>
 
     <div class="form-group col-sm-6">
-        <input autocomplete="off" autofocus class="form-control" name="class_id" placeholder="Class ID" onkeyup="search();" type="text">
+        <input autocomplete="off" autofocus class="form-control" name="class_id" id="class_id" placeholder="Class ID" onkeyup="search();" type="text">
     </div>
+
     <table class="table">
         <thead>
             <tr>
@@ -58,20 +59,18 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-
-            </tr>
-
+            <div class="row" id="results"></div>
             <!--<tr>-->
             <!--    <td>-->
             <!--        <div class="form-check">-->
-            <!--            <input class="form-check-input" type="checkbox" value="CLASSID" id="test">-->
-            <!--            <label class="form-check-label" for="defaultCheck1">classinfo["class_id"}</label>-->
+            <!--            <input class="form-check-input" type="checkbox" value="class_id" id="test">-->
+            <!--            <label class="form-check-label" for="defaultCheck1">TEST</label>-->
             <!--        </div>-->
             <!--    </td>-->
             <!--    <td>-->
-            <!--        classinfo["class_name"]-->
+            <!--        TESTTEST-->
             <!--    </td>-->
+            <!--    <div class=row id="results"></div>-->
             <!--</tr>-->
         </tbody>
 
@@ -80,7 +79,7 @@
         <button class="btn btn-primary" type="submit" id="submit">Update</button>
     </div>
 </form>
-<div class="row" id="results"></div>
+
 <script>
 
     let class_id = document.getElementById('class_id');
@@ -89,14 +88,16 @@
         $.get('/class_search?class_id=' + class_id.value, function(data) {
             let html = '';
             for (class_info of data) {
-                html += '<td><div class="form-check"><input class="form-check-input" type="checkbox" value="'
-                        + classinfo["class_id"]
-                        + '"> <label class="form-check-label" for="defaultCheck1">'
-                        + classinfo["class_id"]
+                html += '<tr><td><div class="form-check"><input class="form-check-input" type="checkbox" value="'
+                        + class_info["class_id"]
+                        + '" id="test">'
+                        + '<label class="form-check-label" for="defaultCheck1">'
+                        + class_info["class_id"]
                         + '</label></div></td><td>'
-                        + classinfo["class_name"]
-                        + '</td>'
+                        + class_info["class_name"]
+                        + '</td><div class=row id="results"></div></tr>'
             }
+            console.log(html)
             document.getElementById("results").innerHTML = html;
         });
     };
