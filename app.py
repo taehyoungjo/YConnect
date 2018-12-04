@@ -6,6 +6,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 from helpers import apology, login_required
 
@@ -162,13 +163,12 @@ def class_change():
 @login_required
 def profile():
     """"""
-    if request.method == "GET":
-        id = request.args.get("id")
-        if id == "self":
-            profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
-        else:
-            profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
-        return render_template("profile.html", profile=profile)
+    id = request.args.get("id")
+    if id == "self":
+        profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+    else:
+        profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
+    return render_template("profile.html", profile=profile)
 
 @app.route("/updateprofile", methods=["GET", "POST"])
 @login_required
@@ -180,13 +180,21 @@ def updateprofile():
         return render_template("updateprofile.html", majors=majors, classes=classes)
     elif request.method == "POST":
         exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+        file = request.files['file']
+        filename = secure_filename(file.filename)
+        file.save(os.path.join('./static/profile_pictures', filename))
+        file_path = "./static/profile_pictures/" + filename
         if exist:
-            result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio WHERE id=:id", id=session["user_id"],
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"))
+            old_pic = db.execute("SELECT file_path FROM profile WHERE id=:id", id=session["user_id"])
+            #os.remove(old_pic[0]['file_path'])
+            result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio, file_path=:file_path WHERE id=:id", id=session["user_id"],
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
+                file_path=file_path)
         else:
-            result = db.execute("INSERT INTO profile (id, name, major, year, residential_college, bio) VALUES(:id, :name, :major, :year, :residential_college, :bio)", id=session["user_id"],
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"))
-        return redirect("/profile")
+            result = db.execute("INSERT INTO profile (id, name, major, year, residential_college, bio, file_path) VALUES(:id, :name, :major, :year, :residential_college, :bio, :file_path)", id=session["user_id"],
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
+                file_path=file_path)
+        return redirect("/profile?id=self")
 
 @app.route("/connections", methods=["GET", "POST"])
 @login_required

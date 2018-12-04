@@ -45,14 +45,6 @@
         $.get('/search?name=' + name.value + '&major=' + major.value + '&year=' + year.value, function(data) {
             let html = '';
             for (profile of data) {
-<<<<<<< HEAD
-                html +='<div class="col-sm-4"><div class="card"><div class="card-body"><h5 class="card-title">'
-                        + profile["name"] + '</h5><p class="card-text">'
-                        + profile["major"]
-                        + ', '
-                        + profile["year"]
-                        + '</p><a href="#" class="btn btn-primary">Profile</a></div></div></div>'
-=======
                 html +='<div class="col-sm-4"><div class="card"><div class="card-body"><h5 class="card-title">' 
                         + profile["name"] + '</h5><p class="card-text">' 
                         + profile["major"] 
@@ -61,7 +53,6 @@
                         + '</p><a href="/profile?id='
                         + profile["id"]
                         + '" class="btn btn-primary">Profile</a></div></div></div>'
->>>>>>> e5140fd3822042f191f80d7174c5875514c92c9b
             }
             document.getElementById("results").innerHTML = html;
         });lineslines
