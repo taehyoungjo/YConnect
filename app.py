@@ -146,10 +146,17 @@ def class_search():
     """"""
     class_id = request.args.get("class_id")
     class_id = str(class_id)
-    print("test: " + class_id)
     class_id_edit = class_id + '%'
     classes = db.execute("SELECT * FROM classes WHERE class_id LIKE :class_id", class_id=class_id_edit)
     return jsonify(classes)
+
+@app.route("/class_change")
+def class_change():
+    """"""
+    class_id = request.args.get("class_id")
+    classes = db.execute("INSERT INTO course_registration (user_id, course_id) VALUES(:id, :class_id)", id=session["user_id"], class_id=class_id)
+    registrations = db.execute("SELECT * FROM course_registration WHERE user_id=:id", id=session["user_id"])
+    return jsonify(registrations)
 
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
