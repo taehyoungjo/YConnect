@@ -32,7 +32,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///yconnect.db")
+db = SQL("postgres://uhxdfwuciutjbf:9ff7d0b74525472b2b108ed1897793760c3af1048a7a2fd5170fbf488b1a6606@ec2-54-197-249-140.compute-1.amazonaws.com:5432/d61idba99ign6t")
 
 
 @app.route("/", methods=["GET", "POST"])
