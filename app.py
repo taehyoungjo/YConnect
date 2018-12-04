@@ -216,18 +216,19 @@ def updateprofile():
 @login_required
 def connections():
 
-    connections = []
+
     if request.method == "GET":
+        connections = []
         connections = db.execute("SELECT * FROM connections WHERE follower=:id", id=session["user_id"])
-        print(connections)
+        followeds = []
+        for connection in connections:
+            followeds.append(db.execute("SELECT * FROM profile WHERE id=:id", id=connection['followed'])[0])
+        return render_template("connections.html", followeds=followeds)
 
-    followeds = []
-    for connection in connections:
-        followeds.append(db.execute("SELECT * FROM profile WHERE id=:id", id=connection['followed'])[0])
-
-    print(followeds)
-
-    return render_template("connections.html", followeds=followeds)
+    if request.method == "POST":
+        followedid = (int)(request.form.get("id"))
+        db.execute("DELETE FROM connections WHERE (follower = :id AND followed = :followedid)", id=session["user_id"], followedid=followedid)
+        return jsonify(True);
 
 def errorhandler(e):
     """Handle error"""
