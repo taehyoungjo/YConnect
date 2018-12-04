@@ -141,6 +141,16 @@ def search():
         profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major AND year = :year", name=name_edit, major=major, year=year)
     return jsonify(profiles)
 
+@app.route("/class_search")
+def class_search():
+    """"""
+    class_id = request.args.get("class_id")
+    class_id = str(class_id)
+    print("test: " + class_id)
+    class_id_edit = class_id + '%'
+    classes = db.execute("SELECT * FROM classes WHERE class_id LIKE :class_id", class_id=class_id_edit)
+    return jsonify(classes)
+
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
@@ -149,7 +159,7 @@ def profile():
         id = request.args.get("id")
         if id == "self":
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
-        else:    
+        else:
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
         return render_template("profile.html", profile=profile)
 
@@ -159,15 +169,16 @@ def updateprofile():
     """"""
     if request.method == "GET":
         majors = db.execute("SELECT id FROM majors")
-        return render_template("updateprofile.html", majors=majors) 
+        classes = db.execute("SELECT * FROM classes")
+        return render_template("updateprofile.html", majors=majors, classes=classes)
     elif request.method == "POST":
         exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
         if exist:
-            result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year WHERE id=:id", id=session["user_id"],
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"))
+            result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio WHERE id=:id", id=session["user_id"],
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"))
         else:
-            result = db.execute("INSERT INTO profile (id, name, major, year) VALUES(:id, :name, :major, :year)", id=session["user_id"], 
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"))
+            result = db.execute("INSERT INTO profile (id, name, major, year, residential_college, bio) VALUES(:id, :name, :major, :year, :residential_college, :bio)", id=session["user_id"],
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"))
         return redirect("/profile")
 
 @app.route("/connections", methods=["GET", "POST"])
