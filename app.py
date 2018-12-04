@@ -68,6 +68,12 @@ def class_check():
     else:
         return jsonify(False)
 
+@app.route("/registered_classes")
+def registered_classes():
+    """"""
+    registrations = db.execute("SELECT * FROM class_registration WHERE user_id=:id", id=session["user_id"])
+    return jsonify(registrations)
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -161,6 +167,12 @@ def class_search():
     class_id_edit = class_id + '%'
     classes = db.execute("SELECT * FROM classes WHERE class_id LIKE :class_id", class_id=class_id_edit)
     return jsonify(classes)
+
+@app.route("/remove_class")
+def remove_class():
+    """"""
+    db.execute("DELETE FROM class_registration WHERE user_id=:id AND class_id=:class_id", id=session["user_id"], class_id=request.args.get("class_id"))
+    return redirect("/profile?id=self")
 
 @app.route("/class_change")
 def class_change():

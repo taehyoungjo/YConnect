@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-<form action="/updateprofile" method="post" enctype=multipart/form-data onload="startup();">
+<form action="/updateprofile" method="post" enctype=multipart/form-data >
 
     <h2><u>Personal Info</u></h2>
     <div class="form-group">
@@ -90,12 +90,19 @@
 
 <script>
 
+    //get class_id from html form
     let class_id = document.getElementById('class_id');
 
+    //search for class names and dynamically display html
     function search() {
+        //search for class based on class_id
         $.get('/class_search?class_id=' + class_id.value, function(data) {
+
+            //table head and body html
             let head_html = '<tr><th scope="col">Offered Class ID</th><th scope="col">Offered Class Name</th></tr>'
             let html = '';
+
+            //loop through class data and create html for table
             for (class_info of data) {
                 html += '<tr><td><div class="form-check"><input class="form-check-input" type="checkbox" value="'
                         + class_info["class_id"]
@@ -106,46 +113,83 @@
                         + class_info["class_name"]
                         + '</td><div class=row id="results"></div></tr>'
             }
+
+            //insert generated html into html file
             document.getElementById("results").innerHTML = html;
             document.getElementById("results_head").innerHTML = head_html;
         });
     };
 
+    //generate already registered class table on startup
+    function startup() {
+        $.get('/registered_classes', function(data) {
+            let html = ''
+            let head_html = '<tr><th scope="col">Registered Class ID</th></tr>'
+
+            for (class_info of data) {
+                html += '<tr><td><div class="form-check"><input name="class_id" class="form-check-input" type="checkbox" value="'
+                        + class_info["class_id"]
+                        + '" onclick="remove_class($(this))" id="'
+                        + class_info["class_id"]
+                        + '"><label class="form-check-label" for="defaultCheck1">'
+                        + class_info["class_id"]
+                        + '</label></div></td></tr>'
+            }
+            document.getElementById("courses").innerHTML = html;
+            document.getElementById("courses_head").innerHTML = head_html;
+            });
+        }
+
+    //run startup function on load
+    window.onload = startup();
+
+    //add class when check box is clicked
     //based on: https://stackoverflow.com/questions/28372466/how-to-call-a-function-from-checkbox-onclick-or-onchange
     function addclass(input) {
+        //check if user is already registered for class
         $.get('/class_check?class_id=' + input[0]['value'] , function(e) {
+
+            //if jsonify returns true, user is not already registered
             if(e)
             {
+                //insert class into database
                 $.get('/class_change?class_id=' + input[0]['value'], function(data) {
+
+                    //set class_id equal to class_id of checkbox
                     let class_id = document.querySelector('input[name="class_id"]').value;
-                    console.log(class_id)
 
                             let html = ''
-                            let head_html = '<tr><th scope="col">Registered Class ID</th><th scope="col">Registered Class Name</th></tr>'
+                            let head_html = '<tr><th scope="col">Registered Class ID</th></tr>'
 
                             for (class_info of data) {
                                 html += '<tr><td><div class="form-check"><input name="class_id" class="form-check-input" type="checkbox" value="'
                                         + class_info["class_id"]
-                                        + '" onclick="addclass" id="'
+                                        + '" onclick="remove_class($(this))" id="'
                                         + class_info["class_id"]
                                         + '"><label class="form-check-label" for="defaultCheck1">'
                                         + class_info["class_id"]
-                                        + '</label></div></td><td>'
-                                        + class_info["class_name"]
-                                        + '</td><div class=row id="results"></div></tr>'
+                                        + '</label></div></td></tr>'
                             }
-                            console.log(html)
 
                             document.getElementById("courses").innerHTML = html;
                             document.getElementById("courses_head").innerHTML = head_html;
                     });
             }
+            //create error to stop user from registering if already registered
             else
             {
                 alert("Sorry, you have already registered for this class!");
             }
         });
     };
+
+    //remove class when box is checked
+    function remove_class(input) {
+        $.get('/remove_class?class_id='  + input[0]['value'] , function(data) {
+            //run startup() to generate updated class list
+            startup();
+            });
+    }
 </script>
 
 {% endblock %}
