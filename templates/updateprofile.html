@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-<form action="/updateprofile" method="post" enctype=multipart/form-data>
+<form action="/updateprofile" method="post" enctype=multipart/form-data onload="startup();">
 
     <h2><u>Personal Info</u></h2>
     <div class="form-group">
@@ -63,7 +63,7 @@
     <h2><u>Class Selection</u></h2>
 
     <div class="form-group" >
-        <input autocomplete="off" autofocus class="form-control" name="class_id" id="class_id" placeholder="Class ID" onkeyup="search();" type="text">
+        <input autocomplete="off" autofocus class="form-control" name="class_id" id="class_id" placeholder="Class ID" onload="addclass();" onkeyup="search();" type="text">
     </div>
 
     <table class="table">
@@ -113,46 +113,38 @@
 
     //based on: https://stackoverflow.com/questions/28372466/how-to-call-a-function-from-checkbox-onclick-or-onchange
     function addclass(input) {
-        // console.log(input);
-        // console.log(input[0]['value'])
+        $.get('/class_check?class_id=' + input[0]['value'] , function(e) {
+            if(e)
+            {
+                $.get('/class_change?class_id=' + input[0]['value'], function(data) {
+                    let class_id = document.querySelector('input[name="class_id"]').value;
+                    console.log(class_id)
 
-        //document.getElementById("class_id").addEventListener("click", function(event){
-            //prevent event before check
-            //event.preventDefault();
+                            let html = ''
+                            let head_html = '<tr><th scope="col">Registered Class ID</th><th scope="col">Registered Class Name</th></tr>'
 
-            //check if user already registered
-            $.get('/class_check?class_id=' + input[0]['value'] , function(e) {
-                if(e)
-                {
-                    $.get('/class_change?class_id=' + input[0]['value'], function(data) {
-                        let class_id = document.querySelector('input[name="class_id"]').value;
-                        console.log(class_id)
+                            for (class_info of data) {
+                                html += '<tr><td><div class="form-check"><input name="class_id" class="form-check-input" type="checkbox" value="'
+                                        + class_info["class_id"]
+                                        + '" onclick="addclass" id="'
+                                        + class_info["class_id"]
+                                        + '"><label class="form-check-label" for="defaultCheck1">'
+                                        + class_info["class_id"]
+                                        + '</label></div></td><td>'
+                                        + class_info["class_name"]
+                                        + '</td><div class=row id="results"></div></tr>'
+                            }
+                            console.log(html)
 
-                                let html = ''
-                                let head_html = '<tr><th scope="col">Registered Class ID</th><th scope="col">Registered Class Name</th></tr>'
-
-                                for (class_info of data) {
-                                    html += '<tr><td><div class="form-check"><input name="class_id" class="form-check-input" type="checkbox" value="'
-                                            + class_info["class_id"]
-                                            + '" onclick="addclass" id="'
-                                            + class_info["class_id"]
-                                            + '"><label class="form-check-label" for="defaultCheck1">'
-                                            + class_info["class_id"]
-                                            + '</label></div></td><td>'
-                                            + class_info["class_name"]
-                                            + '</td><div class=row id="results"></div></tr>'
-                                }
-                                console.log(html)
-
-                                document.getElementById("courses").innerHTML = html;
-                                document.getElementById("courses_head").innerHTML = head_html;
-                        });
-                }
-                else
-                {
-                    alert("Sorry, you have already registered for this class!");
-                }
-            });
+                            document.getElementById("courses").innerHTML = html;
+                            document.getElementById("courses_head").innerHTML = head_html;
+                    });
+            }
+            else
+            {
+                alert("Sorry, you have already registered for this class!");
+            }
+        });
     };
 </script>
 

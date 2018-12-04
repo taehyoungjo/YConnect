@@ -1,4 +1,5 @@
 import os
+import json
 
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
@@ -61,7 +62,7 @@ def check():
 def class_check():
     """Return true if not registered for class available, else false, in JSON format"""
 
-    # Check if username already exists
+    # Check if registration already exists
     if not db.execute("SELECT class_id FROM class_registration WHERE class_id=:class_id AND user_id=:id", class_id=request.args.get('class_id'), id=session["user_id"]):
         return jsonify(True)
     else:
@@ -164,21 +165,35 @@ def class_search():
 @app.route("/class_change")
 def class_change():
     """"""
+
     class_id = request.args.get("class_id")
     classes = db.execute("INSERT INTO class_registration (user_id, class_id) VALUES(:id, :class_id)", id=session["user_id"], class_id=class_id)
     registrations = db.execute("SELECT * FROM class_registration WHERE user_id=:id", id=session["user_id"])
     return jsonify(registrations)
 
+
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
     """"""
-    id = request.args.get("id")
-    if id == "self":
-        profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
-    else:
+    if request.method == "GET":
+        id = request.args.get("id")
+        if id == "self":
+            profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+            return render_template("profile.html", profile=profile, isSelf=True)
+        else:
+            profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
+            connection = db.execute("SELECT * FROM connections WHERE (follower = :follower AND followed = :followed)", follower=session["user_id"], followed=id)
+            if (not connection):
+                return render_template("profile.html", profile=profile, isSelf=False, isConnected=False, id=json.dumps(id))
+            else:
+                return render_template("profile.html", profile=profile, isSelf=False, isConnected=True)
+
+    elif request.method == "POST":
+        id = (int)(request.form.get("id"))
         profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
-    return render_template("profile.html", profile=profile)
+        db.execute("INSERT INTO connections (follower, followed) VALUES (:follower, :followed)", follower=session["user_id"], followed=id)
+        return jsonify(True);
 
 @app.route("/updateprofile", methods=["GET", "POST"])
 @login_required
@@ -190,10 +205,13 @@ def updateprofile():
         return render_template("updateprofile.html", majors=majors, classes=classes)
     elif request.method == "POST":
         exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
-        file = request.files['file']
-        filename = secure_filename(file.filename)
-        file.save(os.path.join('./static/profile_pictures', filename))
-        file_path = "./static/profile_pictures/" + filename
+        if 'file' not in request.files:
+            file_path = "./static/profile_pictures/yale.png"
+        else:
+            file = request.files['file']
+            filename = secure_filename(file.filename)
+            file.save(os.path.join('./static/profile_pictures', filename))
+            file_path = "./static/profile_pictures/" + filename
         if exist:
             old_pic = db.execute("SELECT file_path FROM profile WHERE id=:id", id=session["user_id"])
             #os.remove(old_pic[0]['file_path'])
@@ -209,9 +227,20 @@ def updateprofile():
 @app.route("/connections", methods=["GET", "POST"])
 @login_required
 def connections():
-    """"""
+
+
     if request.method == "GET":
-        return render_template("connections.html")
+        connections = []
+        connections = db.execute("SELECT * FROM connections WHERE follower=:id", id=session["user_id"])
+        followeds = []
+        for connection in connections:
+            followeds.append(db.execute("SELECT * FROM profile WHERE id=:id", id=connection['followed'])[0])
+        return render_template("connections.html", followeds=followeds)
+
+    if request.method == "POST":
+        followedid = (int)(request.form.get("id"))
+        db.execute("DELETE FROM connections WHERE (follower = :id AND followed = :followedid)", id=session["user_id"], followedid=followedid)
+        return jsonify(True);
 
 def errorhandler(e):
     """Handle error"""
@@ -223,3 +252,6 @@ def errorhandler(e):
 # Listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
+if __name__ == "__main__":
+    app.run()
