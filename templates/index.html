@@ -45,8 +45,11 @@
         $.get('/search?name=' + name.value + '&major=' + major.value + '&year=' + year.value, function(data) {
             let html = '';
             for (profile of data) {
-                html +='<div class="col-sm-4"><div class="card"><div class="card-body"><h5 class="card-title">' 
-                        + profile["name"] + '</h5><p class="card-text">' 
+                html +='<div class="col-sm-4"><div class="card"><img src="'
+                        + profile["file_path"]
+                        + '" class="img-fluid" alt="Responsive image"><div class="card-body"><h5 class="card-title">' 
+                        + profile["name"] 
+                        + '</h5><p class="card-text">' 
                         + profile["major"] 
                         + ', ' 
                         + profile["year"] 
