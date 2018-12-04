@@ -6,12 +6,17 @@
 
 {% block main %}
 {% for profile in profile%}
-    <img src="{{profile["file_path"]}}" class="img-fluid" alt="Responsive image">
-    <h2>{{ profile["name"] }}</h2>
-    <h2>{{ profile["major"] }}</h2>
-    <h2>{{ profile["year"] }}</h2>
-    <h2>{{ profile["residential_college"] }}</h2>
-    <h2>{{ profile["bio"] }}</h2>
+    <div class="card">
+        <img src="{{ profile["file_path"] }}" class="card-img-top" alt="Responsive image">
+        <div class="card-body">
+            <h5 class="card-title">{{ profile["name"]}}</h5>
+            <h6>{{ profile["major"] }}</h6>
+            <h6>{{ profile["year"] }}</h6>
+            <h6>{{ profile["residential_college"] }}</h6>
+            <p class="card-text">{{ profile["bio"] }}</p>
+        </div>
+    </div>
+
 {% endfor %}
 
 {% if not isSelf %}

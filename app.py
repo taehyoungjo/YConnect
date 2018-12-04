@@ -192,11 +192,14 @@ def updateprofile():
         classes = db.execute("SELECT * FROM classes")
         return render_template("updateprofile.html", majors=majors, classes=classes)
     elif request.method == "POST":
-        exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
-        file = request.files['file']
-        filename = secure_filename(file.filename)
-        file.save(os.path.join('./static/profile_pictures', filename))
-        file_path = "./static/profile_pictures/" + filename
+        exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])        
+        if 'file' not in request.files:
+            file_path = "./static/profile_pictures/yale.png"
+        else:
+            file = request.files['file']
+            filename = secure_filename(file.filename)
+            file.save(os.path.join('./static/profile_pictures', filename))
+            file_path = "./static/profile_pictures/" + filename        
         if exist:
             old_pic = db.execute("SELECT file_path FROM profile WHERE id=:id", id=session["user_id"])
             #os.remove(old_pic[0]['file_path'])
