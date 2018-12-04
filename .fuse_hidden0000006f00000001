@@ -1,5 +1,4 @@
 import os
-import json
 
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
@@ -7,7 +6,6 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
 
 from helpers import apology, login_required
 
@@ -57,16 +55,6 @@ def check():
             return jsonify(True)
         else:
             return jsonify(False)
-
-@app.route("/class_check", methods=["GET"])
-def class_check():
-    """Return true if not registered for class available, else false, in JSON format"""
-
-    # Check if username already exists
-    if not db.execute("SELECT class_id FROM class_registration WHERE class_id=:class_id AND user_id=:id", class_id=request.args.get('class_id'), id=session["user_id"]):
-        return jsonify(True)
-    else:
-        return jsonify(False)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -158,17 +146,10 @@ def class_search():
     """"""
     class_id = request.args.get("class_id")
     class_id = str(class_id)
+    print("test: " + class_id)
     class_id_edit = class_id + '%'
     classes = db.execute("SELECT * FROM classes WHERE class_id LIKE :class_id", class_id=class_id_edit)
     return jsonify(classes)
-
-@app.route("/class_change")
-def class_change():
-    """"""
-    class_id = request.args.get("class_id")
-    classes = db.execute("INSERT INTO class_registration (user_id, class_id) VALUES(:id, :class_id)", id=session["user_id"], class_id=class_id)
-    registrations = db.execute("SELECT * FROM class_registration WHERE user_id=:id", id=session["user_id"])
-    return jsonify(registrations)
 
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
@@ -178,20 +159,19 @@ def profile():
         id = request.args.get("id")
         if id == "self":
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
-            return render_template("profile.html", profile=profile, isSelf=True)
+            return render_template("profile.html", profile=profile, self=True)
         else:
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
-            connection = db.execute("SELECT * FROM connections WHERE (follower = :follower AND followed = :followed)", follower=session["user_id"], followed=id)
+            connection = db.execute("SELECT * FROM connections WHERE id = :id", id=id)
             if (not connection):
-                return render_template("profile.html", profile=profile, isSelf=False, isConnected=False, id=json.dumps(id))
+                return render_template("profile.html", profile=profile, self=False, connected=False, id=id)
             else:
-                return render_template("profile.html", profile=profile, isSelf=False, isConnected=True)
+                return render_template("profile.html", profile=profile, self=False, connected=True)
 
-    elif request.method == "POST":
-        id = (int)(request.form.get("id"))
-        profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
-        db.execute("INSERT INTO connections (follower, followed) VALUES (:follower, :followed)", follower=session["user_id"], followed=id)
-        return jsonify(True);
+    if request.method == "POST":
+        id = request.form.get("id")
+        db.execute("INSERT INTO connections (follower, followeds) VALUES (:follower, :followeds)", follower=session["user_id"], followed=id)
+
 
 @app.route("/updateprofile", methods=["GET", "POST"])
 @login_required
@@ -202,43 +182,31 @@ def updateprofile():
         classes = db.execute("SELECT * FROM classes")
         return render_template("updateprofile.html", majors=majors, classes=classes)
     elif request.method == "POST":
-        exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])        
-        if 'file' not in request.files:
-            file_path = "./static/profile_pictures/yale.png"
-        else:
-            file = request.files['file']
-            filename = secure_filename(file.filename)
-            file.save(os.path.join('./static/profile_pictures', filename))
-            file_path = "./static/profile_pictures/" + filename        
+        exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
         if exist:
-            old_pic = db.execute("SELECT file_path FROM profile WHERE id=:id", id=session["user_id"])
-            #os.remove(old_pic[0]['file_path'])
-            result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio, file_path=:file_path WHERE id=:id", id=session["user_id"],
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
-                file_path=file_path)
+            result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio WHERE id=:id", id=session["user_id"],
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"))
         else:
-            result = db.execute("INSERT INTO profile (id, name, major, year, residential_college, bio, file_path) VALUES(:id, :name, :major, :year, :residential_college, :bio, :file_path)", id=session["user_id"],
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
-                file_path=file_path)
-        return redirect("/profile?id=self")
+            result = db.execute("INSERT INTO profile (id, name, major, year, residential_college, bio) VALUES(:id, :name, :major, :year, :residential_college, :bio)", id=session["user_id"],
+                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"))
+        return redirect("/profile")
 
 @app.route("/connections", methods=["GET", "POST"])
 @login_required
 def connections():
 
-
+    connections = []
     if request.method == "GET":
-        connections = []
         connections = db.execute("SELECT * FROM connections WHERE follower=:id", id=session["user_id"])
-        followeds = []
-        for connection in connections:
-            followeds.append(db.execute("SELECT * FROM profile WHERE id=:id", id=connection['followed'])[0])
-        return render_template("connections.html", followeds=followeds)
+        print(connections)
 
-    if request.method == "POST":
-        followedid = (int)(request.form.get("id"))
-        db.execute("DELETE FROM connections WHERE (follower = :id AND followed = :followedid)", id=session["user_id"], followedid=followedid)
-        return jsonify(True);
+    followeds = []
+    for connection in connections:
+        followeds.append(db.execute("SELECT * FROM profile WHERE id=:id", id=connection['followed'])[0])
+
+    print(followeds)
+
+    return render_template("connections.html", followeds=followeds)
 
 def errorhandler(e):
     """Handle error"""

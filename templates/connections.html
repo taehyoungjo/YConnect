@@ -6,7 +6,48 @@
 
 {% block main %}
 
+<table class="table">
+	<thead>
+		<tr>
+			<th scope="col">Name</th>
+			<th scope="col">Major</th>
+			<th scope="col">Year</th>
+			<th scope="col">Profile</th>
+			<th scope="col">Remove</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for followed in followeds %}
+			<tr id='{{ followed["id"] }}'>
+				<th scope="row">{{ followed["name"] }}</th>
+				<td>{{ followed["year"] }}</td>
+				<td>{{ followed["major"] }}</td>
+				<td><a href="../profile?id={{ followed['id'] }}">Profile</a></td>
+				<td>
+					<form action='javascript:post({{ followed["id"] }})'>
+						<button type="submit" class="btn btn-primary">Remove</button>
+					</form>
+				</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
 <script>
+	function post(id) {
+		$.ajax({
+            type:'POST',
+            url:"/connections",
+            data:{"id": id},
+            success:function (data) {
+            	$("#" + id).remove();
+            },
+            error:function (xhr, status, errorThrown) {
+                console.log(xhr); //could be alert if you don't use the dev tools
+            },
+            dataType:"json"
+        });
+	};
 </script>
 
 {% endblock %}
