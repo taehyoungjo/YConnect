@@ -159,9 +159,19 @@ def profile():
         id = request.args.get("id")
         if id == "self":
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+            return render_template("profile.html", profile=profile, self=True)
         else:
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
-        return render_template("profile.html", profile=profile)
+            connection = db.execute("SELECT * FROM connections WHERE id = :id", id=id)
+            if (not connection):
+                return render_template("profile.html", profile=profile, self=False, connected=False, id=id)
+            else:
+                return render_template("profile.html", profile=profile, self=False, connected=True)
+
+    if request.method == "POST":
+        id = request.form.get("id")
+        db.execute("INSERT INTO connections (follower, followeds) VALUES (:follower, :followeds)", follower=session["user_id"], followed=id)
+
 
 @app.route("/updateprofile", methods=["GET", "POST"])
 @login_required
@@ -184,9 +194,19 @@ def updateprofile():
 @app.route("/connections", methods=["GET", "POST"])
 @login_required
 def connections():
-    """"""
+
+    connections = []
     if request.method == "GET":
-        return render_template("connections.html")
+        connections = db.execute("SELECT * FROM connections WHERE follower=:id", id=session["user_id"])
+        print(connections)
+
+    followeds = []
+    for connection in connections:
+        followeds.append(db.execute("SELECT * FROM profile WHERE id=:id", id=connection['followed'])[0])
+
+    print(followeds)
+
+    return render_template("connections.html", followeds=followeds)
 
 def errorhandler(e):
     """Handle error"""
@@ -198,3 +218,6 @@ def errorhandler(e):
 # Listen for errors
 for code in default_exceptions:
     app.errorhandler(code)(errorhandler)
+
+if __name__ == "__main__":
+    app.run()

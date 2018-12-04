@@ -6,7 +6,25 @@
 
 {% block main %}
 
-<script>
-</script>
+<table class="table">
+	<thead>
+		<tr>
+			<th scope="col">Name</th>
+			<th scope="col">Major</th>
+			<th scope="col">Year</th>
+			<th scope="col">Profile</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for followed in followeds %}
+			<tr>
+				<th scope="row">{{ followed["name"] }}</th>
+				<td>{{ followed["year"] }}</td>
+				<td>{{ followed["major"] }}</td>
+				<td><a href="../profile?id={{ followed['id'] }}">Profile</a></td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
 
 {% endblock %}
