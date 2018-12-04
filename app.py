@@ -153,10 +153,14 @@ def class_search():
 
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
-def myprofile():
+def profile():
     """"""
     if request.method == "GET":
-        profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+        id = request.args.get("id")
+        if id == "self":
+            profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+        else:
+            profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
         return render_template("profile.html", profile=profile)
 
 @app.route("/updateprofile", methods=["GET", "POST"])
