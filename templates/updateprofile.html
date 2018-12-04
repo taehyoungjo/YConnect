@@ -5,7 +5,9 @@
 {% endblock %}
 
 {% block main %}
-<form action="/updateprofile" method="post">
+<form action="/updateprofile" method="post" enctype=multipart/form-data>
+
+    <h2><u>Personal Info</u></h2>
     <div class="form-group">
         <input autocomplete="off" autofocus class="form-control" name="name" placeholder="Name" type="text">
     </div>
@@ -48,23 +50,39 @@
     </div>
 
     <div class="form-group">
+        <label for="file">Profile Picture</label>
+        <input type="file" class="form-control-file" name="file" id="file">
+    </div>
+
+    <div class="form-group">
         <textarea class="form-control" placeholder="bio" name="bio" rows="3"></textarea>
     </div>
 
-    <div class="form-group col-sm-6">
+    <p>&nbsp;</p>
+
+    <h2><u>Class Selection</u></h2>
+
+    <div class="form-group" >
         <input autocomplete="off" autofocus class="form-control" name="class_id" id="class_id" placeholder="Class ID" onkeyup="search();" type="text">
     </div>
 
     <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">Class ID</th>
-                <th scope="col">Class Name</th>
-            </tr>
-        </thead>
+        <thead id="results_head"></thead>
         <tbody id="results"></tbody>
 
     </table>
+
+    <p>&nbsp;</p>
+
+    <h2><u>Selected Classes</u></h2>
+
+    <table class="table">
+        <thead id="courses_head"></thead>
+        <tbody id="courses"></tbody>
+    </table>
+
+    <p>&nbsp;</p>
+
     <div>
         <button class="btn btn-primary" type="submit" id="submit">Update</button>
     </div>
@@ -76,12 +94,13 @@
 
     function search() {
         $.get('/class_search?class_id=' + class_id.value, function(data) {
+            let head_html = '<tr><th scope="col">Offered Class ID</th><th scope="col">Offered Class Name</th></tr>'
             let html = '';
             for (class_info of data) {
                 html += '<tr><td><div class="form-check"><input class="form-check-input" type="checkbox" value="'
                         + class_info["class_id"]
-                        + '" id="test">'
-                        + '<label class="form-check-label" for="defaultCheck1">'
+                        + '" onclick="addclass($(this))" id="class_id"'
+                        + '><label class="form-check-label" for="defaultCheck1">'
                         + class_info["class_id"]
                         + '</label></div></td><td>'
                         + class_info["class_name"]
@@ -89,6 +108,33 @@
             }
             console.log(html)
             document.getElementById("results").innerHTML = html;
+            document.getElementById("results_head").innerHTML = head_html;
+        });
+    };
+
+    //based on: https://stackoverflow.com/questions/28372466/how-to-call-a-function-from-checkbox-onclick-or-onchange
+    function addclass(input) {
+        console.log(input);
+        console.log(input[0]['value'])
+        $.get('/class_change?class_id=' + input[0]['value'], function(data) {
+            let html = ''
+            let head_html = '<tr><th scope="col">Registered Class ID</th><th scope="col">Registered Class Name</th></tr>'
+            console.log(data[1]["course_id"])
+            for (class_info of data) {
+                    html += '<tr><td><div class="form-check"><input class="form-check-input" type="checkbox" value="'
+                            + class_info["course_id"]
+                            + '" onclick="addclass" id="'
+                            + class_info["course_id"]
+                            + '"><label class="form-check-label" for="defaultCheck1">'
+                            + class_info["course_id"]
+                            + '</label></div></td><td>'
+                            + class_info["class_name"]
+                            + '</td><div class=row id="results"></div></tr>'
+                        }
+
+
+            document.getElementById("courses").innerHTML = html;
+            document.getElementById("courses_head").innerHTML = head_html;
         });
     };
 </script>

@@ -6,6 +6,7 @@
 
 {% block main %}
 {% for profile in profile%}
+    <img src="{{profile["file_path"]}}" class="img-fluid" alt="Responsive image">
     <h2>{{ profile["name"] }}</h2>
     <h2>{{ profile["major"] }}</h2>
     <h2>{{ profile["year"] }}</h2>
