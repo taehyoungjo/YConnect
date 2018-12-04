@@ -14,19 +14,32 @@
     <h2>{{ profile["bio"] }}</h2>
 {% endfor %}
 
-{% if not self %}
-	{% if not connected %}
-		<button type="button" class="btn btn-primary" id="connectedBtn">Add Connection</button>
+{% if not isSelf %}
+	{% if not isConnected %}
+	<form action="javascript:post()">
+		<button type="submit" class="btn btn-primary" id="connectedBtn">Add Connection</button>
+	</form>
 	{% else %}
 		<button type="button" class="btn btn-primary" disabled>Connected</button>
 	{% endif %}
 {% endif %}
-{% endblock %}
 
 <script>
-	$("#connectedBtn").onclick(function() {
-		$.post("/profile", {"id": {{ id }}});
-		this.addAttribute("disabled");
-		this.innerHTML = "Connected";
-	});
+	function post() {
+		$.ajax({
+            type:'POST',
+            url:"/profile",
+            data:{"id": {{ id|safe }}},
+            success:function (data) {
+            	$('#connectedBtn').prop('disabled', true);
+            	$('#connectedBtn').html("Connected");
+            },
+            error:function (xhr, status, errorThrown) {
+                console.log(xhr); //could be alert if you don't use the dev tools
+            },
+            dataType:"json"
+        });
+	};
 </script>
+
+{% endblock %}

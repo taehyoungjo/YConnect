@@ -1,4 +1,5 @@
 import os
+import json
 
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
@@ -167,18 +168,20 @@ def profile():
         id = request.args.get("id")
         if id == "self":
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
-            return render_template("profile.html", profile=profile, self=True)
+            return render_template("profile.html", profile=profile, isSelf=True)
         else:
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
-            connection = db.execute("SELECT * FROM connections WHERE id = :id", id=id)
+            connection = db.execute("SELECT * FROM connections WHERE (follower = :follower AND followed = :followed)", follower=session["user_id"], followed=id)
             if (not connection):
-                return render_template("profile.html", profile=profile, self=False, connected=False, id=id)
+                return render_template("profile.html", profile=profile, isSelf=False, isConnected=False, id=json.dumps(id))
             else:
-                return render_template("profile.html", profile=profile, self=False, connected=True)
+                return render_template("profile.html", profile=profile, isSelf=False, isConnected=True)
 
-    if request.method == "POST":
-        id = request.form.get("id")
-        db.execute("INSERT INTO connections (follower, followeds) VALUES (:follower, :followeds)", follower=session["user_id"], followed=id)
+    elif request.method == "POST":
+        id = (int)(request.form.get("id"))
+        profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
+        db.execute("INSERT INTO connections (follower, followed) VALUES (:follower, :followed)", follower=session["user_id"], followed=id)
+        return jsonify(True);
 
 @app.route("/updateprofile", methods=["GET", "POST"])
 @login_required
