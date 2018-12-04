@@ -62,7 +62,7 @@ def check():
 def class_check():
     """Return true if not registered for class available, else false, in JSON format"""
 
-    # Check if username already exists
+    # Check if registration already exists
     if not db.execute("SELECT class_id FROM class_registration WHERE class_id=:class_id AND user_id=:id", class_id=request.args.get('class_id'), id=session["user_id"]):
         return jsonify(True)
     else:
@@ -165,10 +165,12 @@ def class_search():
 @app.route("/class_change")
 def class_change():
     """"""
+
     class_id = request.args.get("class_id")
     classes = db.execute("INSERT INTO class_registration (user_id, class_id) VALUES(:id, :class_id)", id=session["user_id"], class_id=class_id)
     registrations = db.execute("SELECT * FROM class_registration WHERE user_id=:id", id=session["user_id"])
     return jsonify(registrations)
+
 
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
