@@ -69,11 +69,11 @@
     let major = document.getElementById('major');
     let year = document.getElementById('year');
     let residential_college = document.getElementById('residential_college');
-
+    let class_id = document.getElementById('class_id');
 
     //search for users and diplay results
     function search() {
-        $.get('/search?name=' + name.value + '&major=' + major.value + '&year=' + year.value + '&res=' + residential_college.value, function(data) {
+        $.get('/search?name=' + name.value + '&major=' + major.value + '&year=' + year.value + '&res=' + residential_college.value + '&class_id=' + class_id.value, function(data) {
             let html = '';
 
             //generate html for each profile returned in a search
