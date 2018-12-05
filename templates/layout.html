@@ -12,7 +12,9 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     
-        <title>YConnect</title>
+        <title>{% block title %}{% endblock %}</title>
+
+        <style>{% block style %}{% endblock %}</style>
     </head>
     <body>
         <nav class="navbar navbar-expand-md navbar-light bg-light border">
@@ -39,7 +41,7 @@
                 {% endif %}
             </div>
         </nav>
-        <main class="container p-5">
+        <main>
             {% block main %}{% endblock %}
         </main>
         <footer>
