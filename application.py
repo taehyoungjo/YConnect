@@ -17,6 +17,7 @@ app = Flask(__name__)
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
+
 # Ensure responses aren't cached
 @app.after_request
 def after_request(response):
@@ -24,6 +25,7 @@ def after_request(response):
     response.headers["Expires"] = 0
     response.headers["Pragma"] = "no-cache"
     return response
+
 
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
@@ -44,6 +46,7 @@ def index():
         return render_template("index.html", majors=majors)
 
 
+# Check to see if username is available
 @app.route("/check", methods=["GET"])
 def check():
     """Return true if username available, else false, in JSON format"""
@@ -58,6 +61,8 @@ def check():
         else:
             return jsonify(False)
 
+
+# Check if user is already registered for class
 @app.route("/class_check", methods=["GET"])
 def class_check():
     """Return true if not registered for class available, else false, in JSON format"""
@@ -67,6 +72,13 @@ def class_check():
         return jsonify(True)
     else:
         return jsonify(False)
+
+# Query database for classes that a user is registered for
+@app.route("/registered_classes")
+def registered_classes():
+    """"""
+    registrations = db.execute("SELECT * FROM class_registration WHERE user_id=:id", id=session["user_id"])
+    return jsonify(registrations)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -118,9 +130,14 @@ def logout():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+
+    # Render register template
     if request.method == "GET":
         return render_template("register.html")
+
+    # Register User
     elif request.method == "POST":
+
         # Check if each field has input
         if not request.form.get("username"):
             return apology("Must enter username", 400)
@@ -128,21 +145,34 @@ def register():
             return apology("Must enter password", 400)
         elif request.form.get("password") != request.form.get("confirmation"):
             return apology("Passwords don't match", 400)
+
         # Insert new user
         result = db.execute("INSERT INTO users (username, hash) VALUES(:username, :hash)", username=request.form.get(
             "username"), hash=generate_password_hash(request.form.get("password")))
+
+        # Server validation to see if username is available
         if not result:
             return apology("Username already exists", 400)
+
+        # Set user_id to session id to use across website
         session["user_id"] = result
+
         return redirect("/updateprofile")
 
+
+# Search for users based on profile info
 @app.route("/search")
 def search():
     """"""
     name = request.args.get("name")
+
+    # Edit name so "LIKE" database query can be use ex. 'oh' would return 'John'
     name_edit = '%' + name + '%'
+
     major = request.args.get("major")
     year = request.args.get("year")
+
+    # Search database with provided vales
     if major == "NULL" and year == "NULL":
         profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name", name=name_edit)
     elif major == "NULL":
@@ -150,9 +180,14 @@ def search():
     elif year == "NULL":
         profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major", name=name_edit, major=major)
     elif major and year:
-        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major AND year = :year", name=name_edit, major=major, year=year)
+        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major AND year = :year",
+                              name=name_edit, major=major, year=year)
+
+    # Return profiles that match criteria
     return jsonify(profiles)
 
+
+# Search for classes given a string
 @app.route("/class_search")
 def class_search():
     """"""
@@ -162,85 +197,128 @@ def class_search():
     classes = db.execute("SELECT * FROM classes WHERE class_id LIKE :class_id", class_id=class_id_edit)
     return jsonify(classes)
 
+
+# Remove class that a user registered for
+@app.route("/remove_class")
+def remove_class():
+    """"""
+    db.execute("DELETE FROM class_registration WHERE user_id=:id AND class_id=:class_id",
+               id=session["user_id"], class_id=request.args.get("class_id"))
+    return redirect("/profile?id=self")
+
+
+# Register classes for a user
 @app.route("/class_change")
 def class_change():
     """"""
-
     class_id = request.args.get("class_id")
-    classes = db.execute("INSERT INTO class_registration (user_id, class_id) VALUES(:id, :class_id)", id=session["user_id"], class_id=class_id)
+    classes = db.execute("INSERT INTO class_registration (user_id, class_id) VALUES(:id, :class_id)",
+                         id=session["user_id"], class_id=class_id)
     registrations = db.execute("SELECT * FROM class_registration WHERE user_id=:id", id=session["user_id"])
     return jsonify(registrations)
 
 
+# User profile
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
     """"""
     if request.method == "GET":
         id = request.args.get("id")
+
+        # Generate profile different if own
         if id == "self":
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
             return render_template("profile.html", profile=profile, isSelf=True)
+
+        # Display profile of other user
         else:
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
-            connection = db.execute("SELECT * FROM connections WHERE (follower = :follower AND followed = :followed)", follower=session["user_id"], followed=id)
+            connection = db.execute("SELECT * FROM connections WHERE (follower = :follower AND followed = :followed)",
+                                    follower=session["user_id"], followed=id)
+
+            # Determine if user has connection with profile
             if (not connection):
                 return render_template("profile.html", profile=profile, isSelf=False, isConnected=False, id=json.dumps(id))
             else:
                 return render_template("profile.html", profile=profile, isSelf=False, isConnected=True)
 
+    # ???
     elif request.method == "POST":
         id = (int)(request.form.get("id"))
         profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
-        db.execute("INSERT INTO connections (follower, followed) VALUES (:follower, :followed)", follower=session["user_id"], followed=id)
-        return jsonify(True);
+        db.execute("INSERT INTO connections (follower, followed) VALUES (:follower, :followed)",
+                   follower=session["user_id"], followed=id)
+        return jsonify(True)
 
+
+# Create and update profile
 @app.route("/updateprofile", methods=["GET", "POST"])
 @login_required
 def updateprofile():
     """"""
+    # Get information for form
     if request.method == "GET":
         majors = db.execute("SELECT id FROM majors")
         classes = db.execute("SELECT * FROM classes")
         return render_template("updateprofile.html", majors=majors, classes=classes)
+    # Create / update user
     elif request.method == "POST":
+
+        # Query to see if user already exists
         exist = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
+
+        # If no profile picture submitted, add default
         if 'file' not in request.files:
             file_path = "./static/profile_pictures/yale.png"
+
+        # If profile picture is added, add to static files
         else:
             file = request.files['file']
             filename = secure_filename(file.filename)
             file.save(os.path.join('./static/profile_pictures', filename))
             file_path = "./static/profile_pictures/" + filename
+
+        # If user exists, update their profile
         if exist:
             old_pic = db.execute("SELECT file_path FROM profile WHERE id=:id", id=session["user_id"])
-            #os.remove(old_pic[0]['file_path'])
             result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio, file_path=:file_path WHERE id=:id", id=session["user_id"],
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
-                file_path=file_path)
+                                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
+                                file_path=file_path)
+        # Otherwise, create new user
         else:
             result = db.execute("INSERT INTO profile (id, name, major, year, residential_college, bio, file_path) VALUES(:id, :name, :major, :year, :residential_college, :bio, :file_path)", id=session["user_id"],
-                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
-                file_path=file_path)
+                                name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
+                                file_path=file_path)
+
+        # Redirect to personal profile page
         return redirect("/profile?id=self")
 
+
+# Allow users to connect with others
 @app.route("/connections", methods=["GET", "POST"])
 @login_required
 def connections():
 
-
+    # Display previously made connections
     if request.method == "GET":
         connections = []
         connections = db.execute("SELECT * FROM connections WHERE follower=:id", id=session["user_id"])
         followeds = []
+
+        # Get information of connections
         for connection in connections:
             followeds.append(db.execute("SELECT * FROM profile WHERE id=:id", id=connection['followed'])[0])
+
         return render_template("connections.html", followeds=followeds)
 
+    # ???
     if request.method == "POST":
         followedid = (int)(request.form.get("id"))
-        db.execute("DELETE FROM connections WHERE (follower = :id AND followed = :followedid)", id=session["user_id"], followedid=followedid)
-        return jsonify(True);
+        db.execute("DELETE FROM connections WHERE (follower = :id AND followed = :followedid)",
+                   id=session["user_id"], followedid=followedid)
+        return jsonify(True)
+
 
 def errorhandler(e):
     """Handle error"""
