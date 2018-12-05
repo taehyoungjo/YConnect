@@ -196,6 +196,13 @@ def search():
         class_true = " AND id IN(SELECT user_id FROM class_registration WHERE class_id=:class_id)"
 
     execute_statement = "SELECT * FROM profile WHERE name LIKE :name" + major_true + year_true + rc_true + class_true
+
+    if class_id == "NULL":
+        class_true = ""
+    else:
+        class_true = " AND id IN(SELECT user_id FROM class_registration WHERE class_id=:class_id)"
+
+    execute_statement = "SELECT * FROM profile WHERE name LIKE :name" + major_true + year_true + rc_true + class_true
     print(execute_statement)
 
     if class_id != "NULL":
