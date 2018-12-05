@@ -73,6 +73,17 @@ td {
                             <th scope="row">Residential College</th>
                             <td>{{ profile["residential_college"] }}</td>
                         </tr>
+                        <tr>
+                            <th scope="row">Classes</th>
+                            <td> </td>
+                        </tr>
+                        {% for class in classes%}
+                        <tr>
+                            <th scope="row"></th>
+                            <td>{{ class["class_id"] }}</td>                                                        <th scope="row"></th>
+                        </tr>
+                        {% endfor %}
+                        </tr>
                     </tbody>
                 </table>
             </div>

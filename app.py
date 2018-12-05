@@ -295,19 +295,21 @@ def profile():
         # Generate profile different if own
         if id == "self":
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=session["user_id"])
-            return render_template("profile.html", profile=profile, isSelf=True)
+            classes = db.execute("SELECT class_id FROM class_registration WHERE user_id=:id", id=session["user_id"])
+            return render_template("profile.html", profile=profile, isSelf=True, classes=classes)
 
         # Display profile of other user
         else:
             profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
+            classes = db.execute("SELECT class_id FROM class_registration WHERE user_id=:id", id=id)
             connection = db.execute("SELECT * FROM connections WHERE (follower = :follower AND followed = :followed)",
                                     follower=session["user_id"], followed=id)
 
             # Determine if user has connection with profile
             if (not connection):
-                return render_template("profile.html", profile=profile, isSelf=False, isConnected=False, id=json.dumps(id))
+                return render_template("profile.html", profile=profile, isSelf=False, isConnected=False, id=json.dumps(id), classes=classes)
             else:
-                return render_template("profile.html", profile=profile, isSelf=False, isConnected=True)
+                return render_template("profile.html", profile=profile, isSelf=False, isConnected=True, classes=classes)
 
     # Adds connection of profile
     elif request.method == "POST":
