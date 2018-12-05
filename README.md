@@ -1,9 +1,9 @@
 # Yale Connect
 ## Overview
-YConnect is a website that allows Yale students to connect with each other based on college specific criteria such as major, graduation year, and residential college. After finding a someone’s profile the user is then able to “connect” with them which allows the user to easily find that person’s profile again. The user of the website is able to contact others through email and is able to keep their profile up to date if anything changes.
+YConnect is a website that allows Yale students to connect with each other based on college specific criteria such as major, graduation year, and residential college. After finding a someone’s profile the user is then able to “connect” with them which allows the user to easily find that person’s profile again. The user of the website is able to keep their profile up to date if anything changes through the update profile tab.
 
 ## Startup
-The project is implemented as a flask website, therefore the website can be started using `flask run` . 
+The project is implemented as a flask website, therefore the website can be started using `flask run` .
 
 When the website first initializes the login page is displayed. From this page you can either log in or register for an account. Test accounts are available to use as an alternative to testing the registration feature:
 
