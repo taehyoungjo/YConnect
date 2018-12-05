@@ -3,7 +3,7 @@
 YConnect is a website that allows Yale students to connect with each other based on college specific criteria such as major, graduation year, and residential college. After finding a someone’s profile the user is then able to “connect” with them which allows the user to easily find that person’s profile again. The user of the website is able to keep their profile up to date if anything changes through the update profile tab.
 
 ## Startup
-The project is implemented as a flask website, therefore the website can be started using `flask run` .
+The project is implemented as a flask app. Install the requirements (`pip install -r requirements.txt`) for the necessary packages and then run flask (`flask run`).
 
 When the website first initializes the login page is displayed. From this page you can either log in or register for an account. Test accounts are available to use as an alternative to testing the registration feature:
 
@@ -34,10 +34,3 @@ Aside from this information, the user is also able to selected and deselect the 
 YConnect is an app that seeks to allow Yale students to connect based on things that matter to Yale students. It seeks to fill the void between purely information apps (such as Yale’s current facebook directory) and full-fledged social apps. Through highlighting important aspects of the college experience and allowing users to find others who are like them, YConnect helps make the Yale college experience more interconnected.
 
 ### Project by John Brockmeier, John Kim, Tae Hyoung Jo
-
-
-
-
-
-
-
