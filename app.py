@@ -243,7 +243,7 @@ def profile():
             else:
                 return render_template("profile.html", profile=profile, isSelf=False, isConnected=True)
 
-    # ???
+    # Adds connection of profile
     elif request.method == "POST":
         id = (int)(request.form.get("id"))
         profile = db.execute("SELECT * FROM profile WHERE id = :id", id=id)
@@ -312,7 +312,7 @@ def connections():
 
         return render_template("connections.html", followeds=followeds)
 
-    # ???
+    # Removes connection from database
     if request.method == "POST":
         followedid = (int)(request.form.get("id"))
         db.execute("DELETE FROM connections WHERE (follower = :id AND followed = :followedid)",
