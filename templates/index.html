@@ -41,18 +41,21 @@
     let major = document.getElementById('major');
     let year = document.getElementById('year');
 
+    //search for users and diplay results
     function search() {
         $.get('/search?name=' + name.value + '&major=' + major.value + '&year=' + year.value, function(data) {
             let html = '';
+
+            //generate html for each profile returned in a search
             for (profile of data) {
                 html +='<div class="col-sm-4"><div class="card"><img src="'
                         + profile["file_path"]
-                        + '" class="img-fluid" alt="Responsive image"><div class="card-body"><h5 class="card-title">' 
-                        + profile["name"] 
-                        + '</h5><p class="card-text">' 
-                        + profile["major"] 
-                        + ', ' 
-                        + profile["year"] 
+                        + '" class="img-fluid" alt="Responsive image"><div class="card-body"><h5 class="card-title">'
+                        + profile["name"]
+                        + '</h5><p class="card-text">'
+                        + profile["major"]
+                        + ', '
+                        + profile["year"]
                         + '</p><a href="/profile?id='
                         + profile["id"]
                         + '" class="btn btn-primary">Profile</a></div></div></div>'
