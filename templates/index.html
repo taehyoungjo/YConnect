@@ -4,64 +4,76 @@
     Index
 {% endblock %}
 
+{% block style %}
+.card {
+    max-height: 500px;
+}
+.card-text {
+    word-wrap: break-word;
+}
+{% endblock %}
+
 {% block main %}
 
-<div class="container">
-    <form action="/search" method="get">
-        <div class="form-row">
-            <div class="form-group col-sm-12">
-                <input autocomplete="off" autofocus class="form-control" name="name" placeholder="Name" onkeyup="search();" type="text">
+<div class="row justify-content-center">
+    <div class="col-6">
+        <form action="/search" method="get">
+            <div class="form-row">
+                <div class="form-group col-sm-12">
+                    <input autocomplete="off" autofocus class="form-control" name="name" placeholder="Name" onkeyup="search();" type="text">
+                </div>
+            </div>    
+            <div class="form-row">
+                <div class="form-group col-sm-3">
+                    <select id='major' autocomplete="off" autofocus class="form-control" name="major" placeholder="Major" onchange="search();">
+                        <option value="NULL" selected>Major</option>
+                        {% for id in majors %}
+                        <option value="{{id["id"]}}">{{ id["id"] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group col-sm-3">
+                    <select id='year' autocomplete="off" autofocus class="form-control" name="year" placeholder="Year" onchange="search();">
+                        <option value="NULL" selected>Year</option>
+                        <option value="2019">2019</option>
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                    </select>
+                </div>
+                <div class="form-group col-sm-3">
+                    <select id='residential_college' autocomplete="off" autofocus class="form-control" name="residential_college" placeholder="Residential College" onchange="search();">
+                        <option value="NULL" selected>Residential College</option>
+                        <option value="Benjamin Franklin">Benjamin Franklin</option>
+                        <option value="Berkeley">Berkeley</option>
+                        <option value="Branford">Branford</option>
+                        <option value="Davenport">Davenport</option>
+                        <option value="Ezra Stiles">Ezra Stiles</option>
+                        <option value="Grace Hopper">Grace Hopper</option>
+                        <option value="Jonathan Edwards">Jonathan Edwards</option>
+                        <option value="Morse">Morse</option>
+                        <option value="Pauli Murray">Pauli Murray</option>
+                        <option value="Pierson">Pierson</option>
+                        <option value="Saybrook">Saybrook</option>
+                        <option value="Silliman">Silliman</option>
+                        <option value="Timothy Dwight">Timothy Dwight</option>
+                        <option value="Trumbull">Trumbull</option>
+                    </select>
+                </div>
+                <div class="form-group col-sm-3">
+                    <select id='class_id' autocomplete="off" autofocus class="form-control" name="classes" placeholder="Classes" onchange="search();">
+                        <option value="NULL" selected>Courses</option>
+                        {% for id in classes %}
+                        <option value="{{ id["class_id"] }}">{{ id["class_id"] }}</option>
+                        {% endfor %}
+                    </select>    
+                </div>
             </div>
-        </div>    
-        <div class="form-row">
-            <div class="form-group col-sm-3">
-                <select id='major' autocomplete="off" autofocus class="form-control" name="major" placeholder="Major" onchange="search();">
-                    <option value="NULL" selected>Major</option>
-                    {% for id in majors %}
-                    <option value="{{id["id"]}}">{{ id["id"] }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group col-sm-3">
-                <select id='year' autocomplete="off" autofocus class="form-control" name="year" placeholder="Year" onchange="search();">
-                    <option value="NULL" selected>Year</option>
-                    <option value="2019">2019</option>
-                    <option value="2020">2020</option>
-                    <option value="2021">2021</option>
-                    <option value="2022">2022</option>
-                </select>
-            </div>
-            <div class="form-group col-sm-3">
-                <select id='residential_college' autocomplete="off" autofocus class="form-control" name="residential_college" placeholder="Residential College" onchange="search();">
-                    <option value="NULL" selected>Residential College</option>
-                    <option value="Benjamin Franklin">Benjamin Franklin</option>
-                    <option value="Berkeley">Berkeley</option>
-                    <option value="Branford">Branford</option>
-                    <option value="Davenport">Davenport</option>
-                    <option value="Ezra Stiles">Ezra Stiles</option>
-                    <option value="Grace Hopper">Grace Hopper</option>
-                    <option value="Jonathan Edwards">Jonathan Edwards</option>
-                    <option value="Morse">Morse</option>
-                    <option value="Pauli Murray">Pauli Murray</option>
-                    <option value="Pierson">Pierson</option>
-                    <option value="Saybrook">Saybrook</option>
-                    <option value="Silliman">Silliman</option>
-                    <option value="Timothy Dwight">Timothy Dwight</option>
-                    <option value="Trumbull">Trumbull</option>
-                </select>
-            </div>
-            <div class="form-group col-sm-3">
-                <select id='class_id' autocomplete="off" autofocus class="form-control" name="classes" placeholder="Classes" onchange="search();">
-                    <option value="NULL" selected>Courses</option>
-                    {% for id in classes %}
-                    <option value="{{ id["class_id"] }}">{{ id["class_id"] }}</option>
-                    {% endfor %}
-                </select>    
-            </div>
-        </div>
-    </form>
-    <div class="row" id="results"></div>
+        </form>
+        <div class="row" id="results"></div>
+    </div>
 </div>
+
 
 <script>
 
@@ -78,11 +90,11 @@
 
             //generate html for each profile returned in a search
             for (profile of data) {
-                html +='<div class="col-sm-2"><div class="card"><img src="'
+                html +='<div class="col-sm-2"><div class="card" style="width: 150px;"><img src="'
                         + profile["file_path"]
-                        + '" class="card-img-top" alt="Card image"><div class="card-body"><h5 class="card-title">' 
+                        + '" class="card-img-top" alt="Card image"><div class="card-body"><h3 class="card-title">' 
                         + profile["name"] 
-                        + '</h5><p class="card-text">' 
+                        + '</h3><p class="card-text">' 
                         + profile["major"] 
                         + ', ' 
                         + profile["year"] 
