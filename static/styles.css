@@ -36,3 +36,10 @@ main img
     /* constrain images on small screens */
     max-width: 100%;
 }
+
+@media (max-width: 1000px) {
+    /* For mobile phones: */
+    .col-sm-2 {
+        width: 33.33%;
+    }
+}

@@ -41,7 +41,8 @@ def index():
     """"""
     if request.method == "GET":
         majors = db.execute("SELECT id FROM majors")
-        return render_template("index.html", majors=majors)
+        classes = db.execute("SELECT * FROM classes")
+        return render_template("index.html", majors=majors, classes=classes)
 
 
 @app.route("/check", methods=["GET"])
@@ -143,14 +144,60 @@ def search():
     name_edit = '%' + name + '%'
     major = request.args.get("major")
     year = request.args.get("year")
-    if major == "NULL" and year == "NULL":
-        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name", name=name_edit)
-    elif major == "NULL":
-        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND year = :year", name=name_edit, year=year)
-    elif year == "NULL":
-        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major", name=name_edit, major=major)
-    elif major and year:
-        profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major AND year = :year", name=name_edit, major=major, year=year)
+    rc = request.args.get("res")
+
+    print(rc)
+
+    if major == "NULL":
+        major_true = ""
+    else:
+        major_true = " AND major = :major"
+
+    if year == "NULL":
+        year_true = ""
+    else:
+        year_true = " AND year = :year"
+
+    if rc == "NULL":
+        rc_true = ""
+    else:
+        rc_true = " AND residential_college = :rc" 
+
+    execute_statement = "SELECT * FROM profile WHERE name LIKE :name" + major_true + year_true + rc_true         
+    print(execute_statement)
+
+    if major == "NULL":
+        if year == "NULL":
+            if rc == "NULL":
+                profiles = db.execute(execute_statement, name=name_edit)
+            else:
+                profiles = db.execute(execute_statement, name=name_edit, rc=rc)            
+        else:
+            if rc == "NULL":
+                profiles = db.execute(execute_statement, name=name_edit, year=year)
+            else:
+                profiles = db.execute(execute_statement, name=name_edit, year=year, rc=rc)
+    else:
+        if year == "NULL":
+            if rc == "NULL":
+                profiles = db.execute(execute_statement, name=name_edit, major=major)
+            else:
+                profiles = db.execute(execute_statement, name=name_edit, major=major, rc=rc)            
+        else:
+            if rc == "NULL":
+                profiles = db.execute(execute_statement, name=name_edit, major=major, year=year)
+            else:
+                profiles = db.execute(execute_statement, name=name_edit, major=major, year=year, rc=rc)
+
+
+    # if major == "NULL" and year == "NULL":
+    #     profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name", name=name_edit)
+    # elif major == "NULL":
+    #     profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND year = :year", name=name_edit, year=year)
+    # elif year == "NULL":
+    #     profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major", name=name_edit, major=major)
+    # elif major and year:
+    #     profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major AND year = :year", name=name_edit, major=major, year=year)
     return jsonify(profiles)
 
 @app.route("/class_search")
@@ -214,7 +261,7 @@ def updateprofile():
             file_path = "./static/profile_pictures/" + filename
         if exist:
             old_pic = db.execute("SELECT file_path FROM profile WHERE id=:id", id=session["user_id"])
-            #os.remove(old_pic[0]['file_path'])
+            os.remove(old_pic[0]['file_path'])
             result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio, file_path=:file_path WHERE id=:id", id=session["user_id"],
                 name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
                 file_path=file_path)
