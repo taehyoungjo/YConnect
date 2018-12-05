@@ -4,10 +4,86 @@
     Profile
 {% endblock %}
 
+{% block style %}
+
+.top {
+    padding: 0!important;
+    margin: 0!important;
+    background-color: #0f4d92;
+}
+
+.img-container {
+    display: block;
+    margin: auto;
+    width: 300px;
+    height: 300px;
+}
+
+.top-info {
+    color: white;
+}
+
+th {
+    text-align: left;
+}
+
+td {
+    text-align: right
+}
+
+<!-- img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+} -->
+{% endblock %}
+
 {% block main %}
 {% for profile in profile%}
-    <div class="card">
+    
+    <div class="top">
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-1">
+                    <br>
+                    <img src="{{ profile["file_path"] }}" class="rounded-circle">
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <div class="top-info col-8">
+                    <h1 class="display-4">{{ profile["name"]}}</h1>
+                    <br>
+                    <h4>Class of {{ profile["year"] }}</h4>
+                    <blockquote class="blockquote">{{ profile["bio"] }}</blockquote>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-4">
+                <br>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Major</th>
+                            <td>{{ profile["major"] }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Residential College</th>
+                            <td>{{ profile["residential_college"] }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+<!--     <div class="card mx-auto" style="width: 350px;">
+    <div class="img-container">
         <img src="{{ profile["file_path"] }}" class="card-img-top" alt="Responsive image">
+    </div>
         <div class="card-body">
             <h5 class="card-title">{{ profile["name"]}}</h5>
             <h6>{{ profile["major"] }}</h6>
@@ -15,7 +91,7 @@
             <h6>{{ profile["residential_college"] }}</h6>
             <p class="card-text">{{ profile["bio"] }}</p>
         </div>
-    </div>
+    </div> -->
 
 {% endfor %}
 

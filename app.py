@@ -188,14 +188,21 @@ def search():
     if rc == "NULL":
         rc_true = ""
     else:
-        rc_true = " AND residential_college = :rc" 
+        rc_true = " AND residential_college = :rc"
 
     if class_id == "NULL":
         class_true = ""
     else:
         class_true = " AND id IN(SELECT user_id FROM class_registration WHERE class_id=:class_id)"
 
-    execute_statement = "SELECT * FROM profile WHERE name LIKE :name" + major_true + year_true + rc_true + class_true     
+    execute_statement = "SELECT * FROM profile WHERE name LIKE :name" + major_true + year_true + rc_true + class_true
+
+    if class_id == "NULL":
+        class_true = ""
+    else:
+        class_true = " AND id IN(SELECT user_id FROM class_registration WHERE class_id=:class_id)"
+
+    execute_statement = "SELECT * FROM profile WHERE name LIKE :name" + major_true + year_true + rc_true + class_true
     print(execute_statement)
 
     if class_id != "NULL":
@@ -204,7 +211,7 @@ def search():
                 if rc == "NULL":
                     profiles = db.execute(execute_statement, class_id=class_id, name=name_edit)
                 else:
-                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, rc=rc)            
+                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, rc=rc)
             else:
                 if rc == "NULL":
                     profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, year=year)
@@ -214,7 +221,7 @@ def search():
                 if rc == "NULL":
                     profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, major=major)
                 else:
-                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, major=major, rc=rc)            
+                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, major=major, rc=rc)
             else:
                 if rc == "NULL":
                     profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, major=major, year=year)
@@ -226,7 +233,7 @@ def search():
                 if rc == "NULL":
                     profiles = db.execute(execute_statement, name=name_edit)
                 else:
-                    profiles = db.execute(execute_statement, name=name_edit, rc=rc)            
+                    profiles = db.execute(execute_statement, name=name_edit, rc=rc)
             else:
                 if rc == "NULL":
                     profiles = db.execute(execute_statement, name=name_edit, year=year)
@@ -237,7 +244,7 @@ def search():
                 if rc == "NULL":
                     profiles = db.execute(execute_statement, name=name_edit, major=major)
                 else:
-                    profiles = db.execute(execute_statement, name=name_edit, major=major, rc=rc)            
+                    profiles = db.execute(execute_statement, name=name_edit, major=major, rc=rc)
             else:
                 if rc == "NULL":
                     profiles = db.execute(execute_statement, name=name_edit, major=major, year=year)
