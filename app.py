@@ -173,8 +173,7 @@ def search():
     major = request.args.get("major")
     year = request.args.get("year")
     rc = request.args.get("res")
-
-    print(rc)
+    class_id = request.args.get("class_id")
 
     if major == "NULL":
         major_true = ""
@@ -191,41 +190,59 @@ def search():
     else:
         rc_true = " AND residential_college = :rc" 
 
-    execute_statement = "SELECT * FROM profile WHERE name LIKE :name" + major_true + year_true + rc_true         
+    if class_id == "NULL":
+        class_true = ""
+    else:
+        class_true = " AND id IN(SELECT user_id FROM class_registration WHERE class_id=:class_id)"
+
+    execute_statement = "SELECT * FROM profile WHERE name LIKE :name" + major_true + year_true + rc_true + class_true     
     print(execute_statement)
 
-    if major == "NULL":
-        if year == "NULL":
-            if rc == "NULL":
-                profiles = db.execute(execute_statement, name=name_edit)
+    if class_id != "NULL":
+        if major == "NULL":
+            if year == "NULL":
+                if rc == "NULL":
+                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit)
+                else:
+                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, rc=rc)            
             else:
-                profiles = db.execute(execute_statement, name=name_edit, rc=rc)            
+                if rc == "NULL":
+                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, year=year)
+                else:                        profiles = db.execute(execute_statement, id=user, name=name_edit, year=year, rc=rc)
         else:
-            if rc == "NULL":
-                profiles = db.execute(execute_statement, name=name_edit, year=year)
+            if year == "NULL":
+                if rc == "NULL":
+                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, major=major)
+                else:
+                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, major=major, rc=rc)            
             else:
-                profiles = db.execute(execute_statement, name=name_edit, year=year, rc=rc)
+                if rc == "NULL":
+                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, major=major, year=year)
+                else:
+                    profiles = db.execute(execute_statement, class_id=class_id, name=name_edit, major=major, year=year, rc=rc)
     else:
-        if year == "NULL":
-            if rc == "NULL":
-                profiles = db.execute(execute_statement, name=name_edit, major=major)
+        if major == "NULL":
+            if year == "NULL":
+                if rc == "NULL":
+                    profiles = db.execute(execute_statement, name=name_edit)
+                else:
+                    profiles = db.execute(execute_statement, name=name_edit, rc=rc)            
             else:
-                profiles = db.execute(execute_statement, name=name_edit, major=major, rc=rc)            
+                if rc == "NULL":
+                    profiles = db.execute(execute_statement, name=name_edit, year=year)
+                else:
+                    profiles = db.execute(execute_statement, name=name_edit, year=year, rc=rc)
         else:
-            if rc == "NULL":
-                profiles = db.execute(execute_statement, name=name_edit, major=major, year=year)
+            if year == "NULL":
+                if rc == "NULL":
+                    profiles = db.execute(execute_statement, name=name_edit, major=major)
+                else:
+                    profiles = db.execute(execute_statement, name=name_edit, major=major, rc=rc)            
             else:
-                profiles = db.execute(execute_statement, name=name_edit, major=major, year=year, rc=rc)
-
-
-    # if major == "NULL" and year == "NULL":
-    #     profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name", name=name_edit)
-    # elif major == "NULL":
-    #     profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND year = :year", name=name_edit, year=year)
-    # elif year == "NULL":
-    #     profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major", name=name_edit, major=major)
-    # elif major and year:
-    #     profiles = db.execute("SELECT * FROM profile WHERE name LIKE :name AND major = :major AND year = :year", name=name_edit, major=major, year=year)
+                if rc == "NULL":
+                    profiles = db.execute(execute_statement, name=name_edit, major=major, year=year)
+                else:
+                    profiles = db.execute(execute_statement, name=name_edit, major=major, year=year, rc=rc)
     return jsonify(profiles)
 
 
@@ -312,7 +329,7 @@ def updateprofile():
 
         # If no profile picture submitted, add default
         if 'file' not in request.files:
-            file_path = "./static/profile_pictures/yale.png"
+            file_path = "./static/profile_pictures/yale.jpg"
 
         # If profile picture is added, add to static files
         else:
@@ -324,7 +341,8 @@ def updateprofile():
         # If user exists, update their profile
         if exist:
             old_pic = db.execute("SELECT file_path FROM profile WHERE id=:id", id=session["user_id"])
-            os.remove(old_pic[0]['file_path'])
+            if file_path != "./static/profile_pictures/yale.jpg":
+                os.remove(old_pic[0]['file_path'])
             result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio, file_path=:file_path WHERE id=:id", id=session["user_id"],
                                 name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
                                 file_path=file_path)
