@@ -16,7 +16,7 @@ Connections uses a separate table (see below) to allow users to "connect" with o
 Connections can be viewed at `/connections`. To do this, the `GET` request `SELECT`s all entries from the `connections` table that match the user's id as a `follower`. This list is passed onto `connections.html`, where Jinja is used to dynamically generate a table with all connections. These rows include information on the followed profile, a link to that person's profile, and a button that `POST`s to `/connections`, running a `DELETE` query to remove the connection from the database and removing the row from the page.
 
 ## Search
-!!!TAE!!!
+The /index route includes an interface to search for users and specify the query using the attributes name, major, year, residential college, and courses. Using jquery, we pass a GET request to /search with values inputted in the form for each attribute. In /search, we set values for major_true, year_true, rc_true, and class_true by seeing if the passed value is NULL. We then join these with "SELECT * FROM profile WHERE name LIKE :name" to create the first part of our input to db.execute. The next part of the code checks to see what attributes are NULL and sets 'profiles' equal to db.execute() expression with the appropriate inputs. It is unfortunate but necessary to create a chain of if else statements because we cannot pass a value into db.execute(), for example, major=major, without the value being used by the SQL statement. We then apply jsonify() to profiles and generate a card for each returned profile in index.html using Jinja.
 
 ## Databases
 Our project is structured using one database with 6 separate tables contained within.  Including:
@@ -46,4 +46,4 @@ This database stores the class id (ex. ECON110) and class name (ex. An Introduct
 Class registration is implemented in a similar manner to how stocks were traded in the finance PSet. This is because we implemented class registration in a transactional manner. Classes are added and removed from the table and are tracked through the a user_id that is attached to the table. This decision means that all class registration can be kept in the same place and easily queried and used in javascript to dynamically add html to the page.
 
 ## Photos
-!!!TAE!!!
+In /updateprofile, profile pictures are named using secure_filename() and saved in /static/profile_pictures using save(). If no file is submitted, file_path is set to a default file. The 'profile' database includes a column called 'file_path' that contains the path to the file. If the old file path is not the default, the file is deleted as to save memory.
