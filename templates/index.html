@@ -9,9 +9,11 @@
 <div class="container">
     <form action="/search" method="get">
         <div class="form-row">
-            <div class="form-group col-sm-6">
+            <div class="form-group col-sm-12">
                 <input autocomplete="off" autofocus class="form-control" name="name" placeholder="Name" onkeyup="search();" type="text">
             </div>
+        </div>    
+        <div class="form-row">
             <div class="form-group col-sm-3">
                 <select id='major' autocomplete="off" autofocus class="form-control" name="major" placeholder="Major" onchange="search();">
                     <option value="NULL" selected>Major</option>
@@ -29,7 +31,33 @@
                     <option value="2022">2022</option>
                 </select>
             </div>
-
+            <div class="form-group col-sm-3">
+                <select id='residential_college' autocomplete="off" autofocus class="form-control" name="residential_college" placeholder="Residential College" onchange="search();">
+                    <option value="NULL" selected>Residential College</option>
+                    <option value="Benjamin Franklin">Benjamin Franklin</option>
+                    <option value="Berkeley">Berkeley</option>
+                    <option value="Branford">Branford</option>
+                    <option value="Davenport">Davenport</option>
+                    <option value="Ezra Stiles">Ezra Stiles</option>
+                    <option value="Grace Hopper">Grace Hopper</option>
+                    <option value="Jonathan Edwards">Jonathan Edwards</option>
+                    <option value="Morse">Morse</option>
+                    <option value="Pauli Murray">Pauli Murray</option>
+                    <option value="Pierson">Pierson</option>
+                    <option value="Saybrook">Saybrook</option>
+                    <option value="Silliman">Silliman</option>
+                    <option value="Timothy Dwight">Timothy Dwight</option>
+                    <option value="Trumbull">Trumbull</option>
+                </select>
+            </div>
+            <div class="form-group col-sm-3">
+                <select id='class_id' autocomplete="off" autofocus class="form-control" name="classes" placeholder="Classes" onchange="search();">
+                    <option value="NULL" selected>Courses</option>
+                    {% for id in classes %}
+                    <option value="{{ id["class_id"] }}">{{ id["class_id"] }}</option>
+                    {% endfor %}
+                </select>    
+            </div>
         </div>
     </form>
     <div class="row" id="results"></div>
@@ -40,22 +68,24 @@
     let name = document.querySelector('input');
     let major = document.getElementById('major');
     let year = document.getElementById('year');
+    let residential_college = document.getElementById('residential_college');
+
 
     //search for users and diplay results
     function search() {
-        $.get('/search?name=' + name.value + '&major=' + major.value + '&year=' + year.value, function(data) {
+        $.get('/search?name=' + name.value + '&major=' + major.value + '&year=' + year.value + '&res=' + residential_college.value, function(data) {
             let html = '';
 
             //generate html for each profile returned in a search
             for (profile of data) {
-                html +='<div class="col-sm-4"><div class="card"><img src="'
+                html +='<div class="col-sm-2"><div class="card"><img src="'
                         + profile["file_path"]
-                        + '" class="img-fluid" alt="Responsive image"><div class="card-body"><h5 class="card-title">'
-                        + profile["name"]
-                        + '</h5><p class="card-text">'
-                        + profile["major"]
-                        + ', '
-                        + profile["year"]
+                        + '" class="card-img-top" alt="Card image"><div class="card-body"><h5 class="card-title">' 
+                        + profile["name"] 
+                        + '</h5><p class="card-text">' 
+                        + profile["major"] 
+                        + ', ' 
+                        + profile["year"] 
                         + '</p><a href="/profile?id='
                         + profile["id"]
                         + '" class="btn btn-primary">Profile</a></div></div></div>'
