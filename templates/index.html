@@ -71,9 +71,12 @@
     let residential_college = document.getElementById('residential_college');
 
 
+    //search for users and diplay results
     function search() {
         $.get('/search?name=' + name.value + '&major=' + major.value + '&year=' + year.value + '&res=' + residential_college.value, function(data) {
             let html = '';
+
+            //generate html for each profile returned in a search
             for (profile of data) {
                 html +='<div class="col-sm-2"><div class="card"><img src="'
                         + profile["file_path"]
