@@ -324,10 +324,7 @@ def updateprofile():
         # If user exists, update their profile
         if exist:
             old_pic = db.execute("SELECT file_path FROM profile WHERE id=:id", id=session["user_id"])
-<<<<<<< HEAD
             os.remove(old_pic[0]['file_path'])
-=======
->>>>>>> 0a82d418adcee5b2df83f50c068d9eb706e5472f
             result = db.execute("UPDATE profile SET name=:name, major=:major, year=:year, residential_college=:residential_college, bio=:bio, file_path=:file_path WHERE id=:id", id=session["user_id"],
                                 name=request.form.get("name"), major=request.form.get("major"), year=request.form.get("year"), residential_college=request.form.get("residential_college"), bio=request.form.get("bio"),
                                 file_path=file_path)
